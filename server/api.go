@@ -312,6 +312,18 @@ func setGroupAnonymousBan(bot *coolq.CQBot, p resultGetter) coolq.MSG {
 	return bot.CQSetGroupAnonymousBan(p.Get("group_id").Int(), flag.String(), int32(p.Get("duration").Int()))
 }
 
+func getCookies(bot *coolq.CQBot, p resultGetter) coolq.MSG {
+	return bot.CQGetCookies(p.Get("domain").String())
+}
+
+func getCsrfToken(bot *coolq.CQBot, _ resultGetter) coolq.MSG {
+	return bot.CQGetCsrfToken()
+}
+
+func getCredentials(bot *coolq.CQBot, p resultGetter) coolq.MSG {
+	return bot.CQGetCredentials(p.Get("domain").String())
+}
+
 func handleQuickOperation(bot *coolq.CQBot, p resultGetter) coolq.MSG {
 	return bot.CQHandleQuickOperation(p.Get("context"), p.Get("operation"))
 }
@@ -370,6 +382,9 @@ var API = map[string]func(*coolq.CQBot, resultGetter) coolq.MSG{
 	"get_essence_msg_list":       getEssenceMsgList,
 	"check_url_safely":           checkUrlSafely,
 	"set_group_anonymous_ban":    setGroupAnonymousBan,
+	"get_cookies":                getCookies,
+	"get_csrf_token":             getCsrfToken,
+	"get_credentials":            getCredentials,
 	".handle_quick_operation":    handleQuickOperation,
 }
 

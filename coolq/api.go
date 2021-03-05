@@ -1298,6 +1298,28 @@ func (bot *CQBot) CQGetVersionInfo() MSG {
 	})
 }
 
+// CQGetCookies 获取 Cookies
+func (bot *CQBot) CQGetCookies(domain string) MSG {
+	return OK(MSG{
+		"cookies":bot.Client.GetCookiesWithDomain(domain),
+	})
+}
+
+// CQGetCsrfToken 获取 CSRF Token
+func (bot *CQBot) CQGetCsrfToken() MSG {
+	return OK(MSG{
+		"token":bot.Client.GetCSRFToken(),
+	})
+}
+
+// CQGetCredentials 获取 QQ 相关接口凭证
+func (bot *CQBot) CQGetCredentials(domain string) MSG {
+	return OK(MSG{
+		"cookies":bot.Client.GetCookiesWithDomain(domain),
+		"csrf_token":bot.Client.GetCSRFToken(),
+	})
+}
+
 // OK 生成成功返回值
 func OK(data interface{}) MSG {
 	return MSG{"data": data, "retcode": 0, "status": "ok"}
