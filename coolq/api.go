@@ -22,7 +22,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Version go-cqhttp的版本信息，在编译时使用ldfalgs进行覆盖
+// Version go-cqhttp的版本信息，在编译时使用ldflags进行覆盖
 var Version = "unknown"
 
 // CQGetLoginInfo 获取登录号信息
@@ -438,12 +438,12 @@ func (bot *CQBot) CQSendGroupForwardMessage(groupID int64, m gjson.Result) MSG {
 // CQSendPrivateMessage 发送私聊消息
 //
 // https://git.io/Jtz1l
-func (bot *CQBot) CQSendPrivateMessage(userID int64, i interface{}, autoEscape bool) MSG {
+func (bot *CQBot) CQSendPrivateMessage(userID int64, groupId int64, i interface{}, autoEscape bool) MSG {
 	var str string
 	if m, ok := i.(gjson.Result); ok {
 		if m.Type == gjson.JSON {
 			elem := bot.ConvertObjectMessage(m, false)
-			mid := bot.SendPrivateMessage(userID, &message.SendingMessage{Elements: elem})
+			mid := bot.SendPrivateMessage(userID, groupId, &message.SendingMessage{Elements: elem})
 			if mid == -1 {
 				return Failed(100, "SEND_MSG_API_ERROR", "请参考输出")
 			}
@@ -468,7 +468,7 @@ func (bot *CQBot) CQSendPrivateMessage(userID int64, i interface{}, autoEscape b
 	} else {
 		elem = bot.ConvertStringMessage(str, false)
 	}
-	mid := bot.SendPrivateMessage(userID, &message.SendingMessage{Elements: elem})
+	mid := bot.SendPrivateMessage(userID, groupId, &message.SendingMessage{Elements: elem})
 	if mid == -1 {
 		return Failed(100, "SEND_MSG_API_ERROR", "请参考输出")
 	}
@@ -831,9 +831,9 @@ func (bot *CQBot) CQHandleQuickOperation(context, operation gjson.Result) MSG {
 		if reply.Exists() {
 			autoEscape := global.EnsureBool(operation.Get("auto_escape"), false)
 
-			at := !isAnonymous // 除匿名消息场合外默认 true
+			at := !isAnonymous && msgType == "group" // 除匿名消息场合外默认 true
 			if operation.Get("at_sender").Exists() {
-				at = operation.Get("at_sender").Bool() && !isAnonymous
+				at = operation.Get("at_sender").Bool() && !isAnonymous && msgType == "group"
 			}
 
 			if at && reply.IsArray() {
@@ -874,7 +874,7 @@ func (bot *CQBot) CQHandleQuickOperation(context, operation gjson.Result) MSG {
 				bot.CQSendGroupMessage(context.Get("group_id").Int(), reply, autoEscape)
 			}
 			if msgType == "private" {
-				bot.CQSendPrivateMessage(context.Get("user_id").Int(), reply, autoEscape)
+				bot.CQSendPrivateMessage(context.Get("user_id").Int(), context.Get("group_id").Int(), reply, autoEscape)
 			}
 		}
 		if msgType == "group" {
